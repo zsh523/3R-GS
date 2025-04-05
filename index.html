@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3R-GS: Best Practice in Optimizing Camera Poses Along with 3DGS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- MathJax for LaTeX style equations -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 15px;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        h3 {
+            font-size: 1.4rem;
+            margin: 25px 0 10px;
+            color: #2c3e50;
+        }
+        .authors {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .affiliations {
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            color: #555;
+            line-height: 1.4;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .abstract {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: justify;
+        }
+        .teaser {
+            width: 100%;
+            margin-bottom: 0px;
+            box-shadow: none;
+
+            border-radius: 0px;
+        }
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .result-img {
+            width: 100%;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .method-img {
+            width: 100%;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+        .citation {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .placeholder {
+            background-color: #e0e0e0;
+            width: 100%;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-weight: 500;
+            border-radius: 4px;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* for 16:9 aspect ratio */
+            margin-bottom: 30px;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .method-section {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .method-overview {
+            margin-bottom: 30px;
+        }
+        .equation {
+            text-align: center;
+            margin: 25px 0;
+            font-size: 0.8rem;
+        }
+        .figure {
+            margin-bottom: 25px;
+        }
+        .caption {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 8px;
+            font-style: italic;
+        }
+        
+        /* Video player styles */
+        .custom-video-player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        #scene-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        /* Navigation arrows */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            z-index: 10;
+        }
+        
+        .nav-arrow:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .nav-arrow-left {
+            left: 10px;
+        }
+        
+        .nav-arrow-right {
+            right: 10px;
+        }
+        
+        /* Scene buttons container */
+        .scene-buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* Scene buttons */
+        .scene-btn {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .scene-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .scene-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>3R-GS: Best Practice in Optimizing Camera Poses Along with 3DGS</h1>
+            <div class="authors">
+                Zhisheng Huang<sup>1</sup>, Peng Wang<sup>2</sup>, Jingdong Zhang<sup>1</sup>, Yuan Liu<sup>3</sup>, Xin Li<sup>1</sup>, Wenping Wang<sup>1</sup>
+            </div>
+            <div class="affiliations">
+                <sup>1</sup>Texas A&M University, <sup>2</sup>Adobe, <sup>3</sup>Hong Kong University of Science and Technology (HKUST)
+            </div>
+            <div class="buttons">
+                <a href="https://arxiv.org/abs/2404.00000" class="button">Paper</a>
+                <a href="#" class="button button-disabled">Code (coming soon)</a>
+                <!-- <a href="#" class="button">Supplementary</a> -->
+                <a href="#bibtex" class="button">BibTeX</a>
+            </div>
+            <!-- Replace with actual teaser image when available -->
+            <div class="figure">
+                <img src="images/teaser.png" alt="3R-GS Method Pipeline" class="teaser">
+                <div class="caption">
+                    Figure 1: We propose 3R-GS, a robust method for reconstructing high-quality 3D Gaussians and poses from the MASt3R's imperfect output cameras. Our method outperforms simply joint camera pose optimization along with 3DGS in a large margin.
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Abstract</h2>
+        <div class="abstract">
+            <p>3D Gaussian Splatting (3DGS) has revolutionized neural rendering with its efficiency and quality, but like many novel view synthesis methods, it heavily depends on accurate camera poses from Structure-from-Motion (SfM) systems. Although recent SfM pipelines have made impressive progress, questions remain about how to further improve both their robust performance in challenging conditions (e.g., textureless scenes) and the precision of camera parameter estimation simultaneously.</p>
+            
+            <p>We present 3R-GS, a 3D Gaussian Splatting framework that bridges this gap by jointly optimizing 3D Gaussians and camera parameters from large reconstruction priors MASt3R-SfM. We note that naively performing joint 3D Gaussian and camera optimization faces two challenges: the sensitivity to the quality of SfM initialization, and its limited capacity for global optimization, leading to suboptimal reconstruction results.</p>
+            
+            <p>Our 3R-GS overcomes these issues by incorporating optimized practices, enabling robust scene reconstruction even with imperfect camera registration. Extensive experiments demonstrate that 3R-GS delivers high-quality novel view synthesis and precise camera pose estimation while remaining computationally efficient.</p>
+        </div>
+
+        <h2>Video</h2>
+        <p>This video demonstrates the novel view synthesis results of our constructed scenes. Our method significantly outperforms naive joint optimization of camera poses and 3DGS in both rendering quality and camera pose estimation. For camera pose estimation results, please refer to Figure 4.</p>
+        <!-- Scene selection buttons moved outside the video container -->
+        <div class="scene-buttons-container">
+            <button class="scene-btn active" data-scene="0">Truck</button>
+            <button class="scene-btn" data-scene="1">Caterpillar</button>
+            <button class="scene-btn" data-scene="3">Meetingroom</button>
+            <button class="scene-btn" data-scene="5">Ignatius</button>
+            <button class="scene-btn" data-scene="2">Counter</button>
+            <button class="scene-btn" data-scene="4">Bicycle</button>
+            <button class="scene-btn" data-scene="6">Scan69</button>
+            <button class="scene-btn" data-scene="7">Scan106</button>
+        </div>
+        
+        <div class="video-container">
+            <!-- Video player with navigation -->
+            <div class="custom-video-player">
+                <video id="scene-video" controls>
+                    <source src="assets/4月3日truck.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                
+                <!-- Navigation arrows -->
+                <div class="nav-arrow nav-arrow-left" id="prev-scene">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                </div>
+                <div class="nav-arrow nav-arrow-right" id="next-scene">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <h2>Method</h2>
+        <!-- Replace with actual method pipeline image when available -->
+        <div class="figure">
+            <img src="images/pipe.png" alt="Method Pipeline" width="100%">
+            <div class="caption">
+                Figure 2: Overview of our 3R-GS method for joint optimization of camera poses and 3D Gaussians.
+            </div>
+        </div>
+
+        <div class="method-overview">
+            <p>We propose 3R-GS to jointly optimize 3D Gaussians and camera poses from imperfect initial estimates provided by MASt3R-SfM. Our approach addresses two key challenges:</p>
+            
+            <ul>
+                <li><strong>Challenge 1: Sensitivity to initialization</strong> - 3DGS optimization is highly sensitive to initial point-clouds and camera poses</li>
+                <li><strong>Challenge 2: Inefficient pose optimization</strong> - Standard 3DGS lacks mechanisms for efficient camera pose refinement</li>
+            </ul>
+            
+            <p>Our solution consists of three key components:</p>
+            <ol>
+                <li>MCMC-based pose optimization for improved robustness</li>
+                <li>MLP-based global pose refinement for correlated camera adjustments</li>
+                <li>Rendering-free geometric constraints using epipolar geometry</li>
+            </ol>
+        </div>
+        
+        <div class="figure">
+            <img src="images/bags-page.jpg" alt="MCMC Optimization" width="100%">
+            <div class="caption">
+                Figure 3: Motivations for three components in 3R-GS.
+            </div>
+        </div>
+
+        
+        <div class="method-section">
+            <h3>1. MCMC-based Pose Optimization</h3>
+            <p><strong>Problem:</strong> Gaussian primitives have limited adaptability to poor initialization, as rendering gradients only affect a small local region, preventing primitives from escaping local minima.</p>
+            
+            <p><strong>Solution:</strong> We adopt 3DGS-MCMC, which introduces noise-guided exploration to help Gaussians escape local minima and improve convergence:</p>
+            
+            <div class="equation">
+                \[G \leftarrow G + a \cdot \nabla_G \log p(G) + b \cdot \eta\]
+            </div>
+            
+            <p>This approach eliminates the need for heuristic-based densification and pruning in 3DGS, simplifying joint optimization with camera poses.</p>
+        </div>
+        
+        <div class="method-section">
+            <h3>2. MLP-Based Global Pose Refinement</h3>
+            <p><strong>Problem:</strong> Multiple cameras often share common drift errors, but standard optimization treats them independently, potentially distorting correct local relative poses.</p>
+            
+            <p><strong>Solution:</strong> We employ an MLP-based global pose refiner to predict correlated pose corrections:</p>
+            
+            <div class="equation">
+                \[\Delta T_i = R_{MLP}(z_i)\]
+            </div>
+            
+            <p>This shared MLP captures global relationships across all camera views, enabling more consistent and accurate pose adjustments.</p>
+        </div>
+        
+        <div class="method-section">
+            <h3>3. Rendering-Free Geometric Constraint</h3>
+            <p><strong>Problem:</strong> Standard depth-based geometric constraints for camera optimization require rendering multiple views, which is computationally prohibitive in 3DGS.</p>
+            
+            <p><strong>Solution:</strong> We propose a rendering-free geometric constraint using epipolar distances between image correspondences:</p>
+            
+            <div class="equation">
+                \[L_{geo} = \frac{1}{|E|} \sum_{(n,m)\in E} \frac{1}{|M^{n,m}|} \sum_{(x_i,x'_i)\in M^{n,m}} \text{conf}_i \cdot d(x_i, x'_i)\]
+            </div>
+            
+            <p>This enables efficient and globally-informed camera optimization without additional rendering overhead.</p>
+        </div>
+        
+
+        
+        <h2>Results</h2>
+        <p>Our experiments demonstrate that 3R-GS outperforms naive joint optimization approaches in both novel view synthesis quality and camera pose accuracy. Below are some qualitative results:</p>
+        
+        <div class="results">
+            <div class="figure">
+                <img src="images/visual-pose.png" alt="Pose Comparison Results" class="result-img">
+                <div class="caption">
+                    Figure 4: Visualization of camera pose registration.
+                </div>
+            </div>
+            <div class="figure">
+                <img src="images/visual.png" alt="Visual Comparison Results" class="result-img">
+                <div class="caption">
+                    Figure 5: Results for novel view synthesis.
+                </div>
+            </div>
+        </div>
+
+
+
+        <h2>Citation</h2>
+        <div class="citation" id="bibtex">
+@inproceedings{huang20253rgs,
+  title={3R-GS: Best Practice in Optimizing Camera Poses Along with 3DGS},
+  author={Zhisheng Huang and Peng Wang and Jingdong Zhang and Yuan Liu and Xin Li and Wenping Wang},
+  booktitle={arXiv},
+  year={2025}
+}
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 - 3R-GS</p>
+        </div>
+    </footer>
+
+    <script>
+        // Video player functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('scene-video');
+            const prevBtn = document.getElementById('prev-scene');
+            const nextBtn = document.getElementById('next-scene');
+            const sceneButtons = document.querySelectorAll('.scene-btn');
+            
+            // Scene data
+            const scenes = [
+                { name: 'Truck', path: 'assets/4月3日truck.mp4' },
+                { name: 'Caterpillar', path: 'assets/4月3日carter.mp4' },
+                { name: 'Meetingroom', path: 'assets/4月3日meetingroom.mp4' },
+                { name: 'Ignatius', path: 'assets/4月4日Ignatius.mp4' },
+                { name: 'Counter', path: 'assets/4月3日counter.mp4' },
+                { name: 'Bicycle', path: 'assets/4月3日bicycle.mp4' },
+                { name: 'Scan 69', path: 'assets/4月4日scan69.mp4' },
+                { name: 'Scan 106', path: 'assets/4月4日scan106.mp4' }
+            ];
+            
+            let currentSceneIndex = 0;
+            
+            // Function to change scene
+            function changeScene(index) {
+                if (index < 0) index = scenes.length - 1;
+                if (index >= scenes.length) index = 0;
+                
+                currentSceneIndex = index;
+                video.src = scenes[index].path;
+                video.load();
+                
+                // Update active button
+                sceneButtons.forEach((btn, i) => {
+                    if (i === index) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Event listeners for navigation
+            prevBtn.addEventListener('click', function() {
+                changeScene(currentSceneIndex - 1);
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                changeScene(currentSceneIndex + 1);
+            });
+            
+            // Event listeners for scene buttons
+            sceneButtons.forEach((btn, index) => {
+                btn.addEventListener('click', function() {
+                    changeScene(index);
+                });
+            });
+            
+            // Initialize with first scene
+            changeScene(0);
+        });
+    </script>
+</body>
+</html> 
